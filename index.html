@@ -17,6 +17,9 @@
         <h1>Microglia Gene Expression Explorer</h1>
         <p>This tool allows you to explore gene expression in Microglia using dot plots and feature plots. Enter a gene of interest to visualize its expression.</p>
         
+        <h2>Description of the Microglia Object</h2>
+        <p>The Microglia object represents a single-cell RNA sequencing dataset of microglial cells. It contains cluster annotations, gene expression data, and dimensionality reduction embeddings (UMAP) to visualize the cellular landscape.</p>
+        
         <div id="umapplot"></div>
         
         <div class="input-container">
@@ -56,7 +59,7 @@
         });
 
         function updatePlotsFromInput() {
-            let gene = document.getElementById("gene-input").value;
+            let gene = document.getElementById("gene-input").value.trim();
             if (gene in geneData) {
                 updatePlots(gene, geneData);
             } else {
