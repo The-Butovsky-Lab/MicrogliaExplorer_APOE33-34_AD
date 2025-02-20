@@ -25,21 +25,23 @@
             <button onclick="updatePlotsFromInput()">Search</button>
         </div>
         
+        <p id="loading">Loading data, please wait...</p>
         <div id="dotplot"></div>
         <div id="featureplot"></div>
     </div>
 
     <script>
-        // Directly fetch the gene expression data from a public GitHub repository
-        const DATA_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/MicrogliaData/main/gene_expression.json";
+        // Directly fetch the gene expression data from the same repository
+        const DATA_URL = "gene_expression.json"; // File is in the same repo
 
         async function fetchData() {
             try {
-                const response = await fetch(DATA_URL);
+                const response = await fetch(DATA_URL, { mode: "cors" });
                 if (!response.ok) throw new Error("Failed to fetch data");
                 return await response.json();
             } catch (error) {
                 console.error("Error fetching data:", error);
+                document.getElementById("loading").textContent = "Error loading data.";
             }
         }
 
@@ -49,6 +51,7 @@
             if (data) {
                 geneData = data;
                 plotUMAP();
+                document.getElementById("loading").style.display = "none";
             }
         });
 
@@ -95,8 +98,5 @@
             Plotly.newPlot("umapplot", [umapPlot], { title: "UMAP of Clusters" });
         }
     </script>
-</body>
-</html>
-
 </body>
 </html>
