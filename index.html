@@ -8,63 +8,95 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; }
-        .container { max-width: 800px; margin: auto; text-align: center; }
+        .container { max-width: 900px; margin: auto; text-align: center; }
+        .input-container { margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Microglia Gene Expression Explorer</h1>
-        <label for="gene-select">Select a Gene:</label>
-        <select id="gene-select"></select>
+        <p>This tool allows you to explore gene expression in Microglia using dot plots and feature plots. Enter a gene of interest to visualize its expression.</p>
+        
+        <div id="umapplot"></div>
+        
+        <div class="input-container">
+            <label for="gene-input">Enter a Gene:</label>
+            <input type="text" id="gene-input" placeholder="e.g., GeneA">
+            <button onclick="updatePlotsFromInput()">Search</button>
+        </div>
+        
         <div id="dotplot"></div>
         <div id="featureplot"></div>
     </div>
 
     <script>
-        // Load gene expression data
-        d3.json('gene_expression.json').then(data => {
-            let genes = Object.keys(data);
-            let select = d3.select("#gene-select");
-            
-            // Populate dropdown
-            select.selectAll("option")
-                .data(genes)
-                .enter()
-                .append("option")
-                .text(d => d);
-            
-            // Initial plot
-            updatePlots(genes[0]);
-            
-            // Update plots on gene selection
-            select.on("change", function() {
-                updatePlots(this.value);
-            });
+        // Directly fetch the gene expression data from a public GitHub repository
+        const DATA_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/MicrogliaData/main/gene_expression.json";
+
+        async function fetchData() {
+            try {
+                const response = await fetch(DATA_URL);
+                if (!response.ok) throw new Error("Failed to fetch data");
+                return await response.json();
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        let geneData = {};
+
+        fetchData().then(data => {
+            if (data) {
+                geneData = data;
+                plotUMAP();
+            }
         });
 
-        function updatePlots(gene) {
-            d3.json('gene_expression.json').then(data => {
-                let expData = data[gene];
-                
-                // Dot Plot
-                let dotPlot = {
-                    x: expData.clusters,
-                    y: expData.expression,
-                    mode: 'markers',
-                    marker: { size: 10, color: 'blue' }
-                };
-                Plotly.newPlot("dotplot", [dotPlot], { title: `Dot Plot: ${gene}` });
-                
-                // Feature Plot
-                let featurePlot = {
-                    x: expData.UMAP_x,
-                    y: expData.UMAP_y,
-                    mode: 'markers',
-                    marker: { size: 5, color: expData.expression, colorscale: 'Viridis' }
-                };
-                Plotly.newPlot("featureplot", [featurePlot], { title: `Feature Plot: ${gene}` });
-            });
+        function updatePlotsFromInput() {
+            let gene = document.getElementById("gene-input").value;
+            if (gene in geneData) {
+                updatePlots(gene, geneData);
+            } else {
+                alert("Gene not found. Please enter a valid gene.");
+            }
+        }
+
+        function updatePlots(gene, data) {
+            let expData = data[gene];
+            
+            // Dot Plot
+            let dotPlot = {
+                x: expData.clusters,
+                y: expData.expression,
+                mode: 'markers',
+                marker: { size: 10, color: 'blue' }
+            };
+            Plotly.newPlot("dotplot", [dotPlot], { title: `Dot Plot: ${gene}` });
+            
+            // Feature Plot
+            let featurePlot = {
+                x: expData.UMAP_x,
+                y: expData.UMAP_y,
+                mode: 'markers',
+                marker: { size: 5, color: expData.expression, colorscale: 'Viridis' }
+            };
+            Plotly.newPlot("featureplot", [featurePlot], { title: `Feature Plot: ${gene}` });
+        }
+        
+        function plotUMAP() {
+            let umapData = Object.values(geneData)[0]; // Get any gene's UMAP coords
+            let umapPlot = {
+                x: umapData.UMAP_x,
+                y: umapData.UMAP_y,
+                mode: 'markers',
+                marker: { size: 5, color: umapData.clusters, colorscale: 'Category10' },
+                text: umapData.clusters
+            };
+            Plotly.newPlot("umapplot", [umapPlot], { title: "UMAP of Clusters" });
         }
     </script>
+</body>
+</html>
+
 </body>
 </html>
