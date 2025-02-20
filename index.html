@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microglia Seurat Explorer</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin: auto; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Microglia Gene Expression Explorer</h1>
+        <label for="gene-select">Select a Gene:</label>
+        <select id="gene-select"></select>
+        <div id="dotplot"></div>
+        <div id="featureplot"></div>
+    </div>
+
+    <script>
+        // Load gene expression data
+        d3.json('gene_expression.json').then(data => {
+            let genes = Object.keys(data);
+            let select = d3.select("#gene-select");
+            
+            // Populate dropdown
+            select.selectAll("option")
+                .data(genes)
+                .enter()
+                .append("option")
+                .text(d => d);
+            
+            // Initial plot
+            updatePlots(genes[0]);
+            
+            // Update plots on gene selection
+            select.on("change", function() {
+                updatePlots(this.value);
+            });
+        });
+
+        function updatePlots(gene) {
+            d3.json('gene_expression.json').then(data => {
+                let expData = data[gene];
+                
+                // Dot Plot
+                let dotPlot = {
+                    x: expData.clusters,
+                    y: expData.expression,
+                    mode: 'markers',
+                    marker: { size: 10, color: 'blue' }
+                };
+                Plotly.newPlot("dotplot", [dotPlot], { title: `Dot Plot: ${gene}` });
+                
+                // Feature Plot
+                let featurePlot = {
+                    x: expData.UMAP_x,
+                    y: expData.UMAP_y,
+                    mode: 'markers',
+                    marker: { size: 5, color: expData.expression, colorscale: 'Viridis' }
+                };
+                Plotly.newPlot("featureplot", [featurePlot], { title: `Feature Plot: ${gene}` });
+            });
+        }
+    </script>
+</body>
+</html>
