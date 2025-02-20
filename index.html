@@ -28,6 +28,15 @@
             <button onclick="updatePlotsFromInput()">Search</button>
         </div>
         
+        <div class="input-container">
+            <label for="split-by">Split Dot Plot By:</label>
+            <select id="split-by" onchange="updatePlotsFromInput()">
+                <option value="none">None</option>
+                <option value="sex">Sex</option>
+                <option value="condition">Condition</option>
+            </select>
+        </div>
+        
         <p id="loading">Loading data, please wait...</p>
         <div id="dotplot"></div>
         <div id="featureplot"></div>
@@ -60,24 +69,44 @@
 
         function updatePlotsFromInput() {
             let gene = document.getElementById("gene-input").value.trim();
+            let splitBy = document.getElementById("split-by").value;
             if (gene in geneData) {
-                updatePlots(gene, geneData);
+                updatePlots(gene, geneData, splitBy);
             } else {
                 alert("Gene not found. Please enter a valid gene.");
             }
         }
 
-        function updatePlots(gene, data) {
+        function updatePlots(gene, data, splitBy) {
             let expData = data[gene];
-            
-            // Dot Plot
-            let dotPlot = {
-                x: expData.clusters,
-                y: expData.expression,
-                mode: 'markers',
-                marker: { size: 10, color: 'blue' }
-            };
-            Plotly.newPlot("dotplot", [dotPlot], { title: `Dot Plot: ${gene}` });
+            let dotPlotData;
+
+            if (splitBy === "sex") {
+                dotPlotData = {
+                    x: expData.clusters,
+                    y: expData.expression,
+                    mode: 'markers',
+                    marker: { size: 10, color: expData.sex, colorscale: 'Viridis' },
+                    text: expData.sex
+                };
+            } else if (splitBy === "condition") {
+                dotPlotData = {
+                    x: expData.clusters,
+                    y: expData.expression,
+                    mode: 'markers',
+                    marker: { size: 10, color: expData.condition, colorscale: 'Plasma' },
+                    text: expData.condition
+                };
+            } else {
+                dotPlotData = {
+                    x: expData.clusters,
+                    y: expData.expression,
+                    mode: 'markers',
+                    marker: { size: 10, color: 'blue' }
+                };
+            }
+
+            Plotly.newPlot("dotplot", [dotPlotData], { title: `Dot Plot: ${gene}` });
             
             // Feature Plot
             let featurePlot = {
