@@ -7,12 +7,27 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .container { max-width: 900px; margin: auto; text-align: center; }
+        body { font-family: Arial, sans-serif; display: flex; }
+        .container { max-width: 900px; margin: auto; text-align: center; flex: 1; }
+        .sidebar { width: 250px; padding: 20px; background: #f4f4f4; text-align: left; }
         .input-container { margin-bottom: 20px; }
     </style>
 </head>
 <body>
+    <div class="sidebar">
+        <h2>Options</h2>
+        <label for="gene-input">Enter a Gene:</label>
+        <input type="text" id="gene-input" placeholder="e.g., GeneA">
+        <button onclick="updatePlotsFromInput()">Search</button>
+        
+        <label for="split-by">Split Dot Plot By:</label>
+        <select id="split-by" onchange="updatePlotsFromInput()">
+            <option value="none">None</option>
+            <option value="sex">Sex</option>
+            <option value="condition">Condition</option>
+        </select>
+    </div>
+    
     <div class="container">
         <h1>Microglia Gene Expression Explorer</h1>
         <p>This tool allows you to explore gene expression in Microglia using dot plots and feature plots. Enter a gene of interest to visualize its expression.</p>
@@ -21,21 +36,6 @@
         <p>The Microglia object represents a single-cell RNA sequencing dataset of microglial cells. It contains cluster annotations, gene expression data, and dimensionality reduction embeddings (UMAP) to visualize the cellular landscape.</p>
         
         <div id="umapplot"></div>
-        
-        <div class="input-container">
-            <label for="gene-input">Enter a Gene:</label>
-            <input type="text" id="gene-input" placeholder="e.g., GeneA">
-            <button onclick="updatePlotsFromInput()">Search</button>
-        </div>
-        
-        <div class="input-container">
-            <label for="split-by">Split Dot Plot By:</label>
-            <select id="split-by" onchange="updatePlotsFromInput()">
-                <option value="none">None</option>
-                <option value="sex">Sex</option>
-                <option value="condition">Condition</option>
-            </select>
-        </div>
         
         <p id="loading">Loading data, please wait...</p>
         <div id="dotplot"></div>
